@@ -3,15 +3,10 @@ package dev.wesley;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Injector;
-import com.google.inject.Key;
-import dev.wesley.component.Testing;
-import dev.wesley.component.enums.ComponentType;
 import dev.wesley.nms.injector.PlayerPacketInjector;
-import dev.wesley.nms.packet.types.PacketPlayInBlockDigImpl;
 import dev.wesley.system.events.subscription.EventSubscriptions;
 import dev.wesley.world.World;
 import org.bukkit.plugin.java.JavaPlugin;
-import org.jetbrains.annotations.TestOnly;
 
 public class EntityAPI {
     private final JavaPlugin plugin;

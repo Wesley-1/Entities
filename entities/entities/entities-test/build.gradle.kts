@@ -10,4 +10,5 @@ dependencies {
     implementation(Dependencies.LUCKO_SQL)
     implementation(project(":entities-api"))
     compileOnly(Dependencies._SPIGOT)
+    compileOnly(Dependencies.GUICE)
 }

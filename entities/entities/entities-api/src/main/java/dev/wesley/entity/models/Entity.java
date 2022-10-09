@@ -2,10 +2,14 @@ package dev.wesley.entity.models;
 
 import dev.wesley.EntityAPI;
 import dev.wesley.component.Component;
+import dev.wesley.component.enums.ComponentType;
 import dev.wesley.entity.event.EntityEvent;
 import dev.wesley.nms.packet.PacketEvent;
 import dev.wesley.world.World;
+import org.bukkit.Location;
+import org.bukkit.entity.EntityType;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.UUID;
@@ -15,20 +19,19 @@ import java.util.function.Supplier;
 
 public class Entity {
     private final UUID id;
-    private final Set<Component> entityComponents;
+    private final HashMap<String, Component> entityComponents;
     private final World world;
 
     public Entity(final World world, final UUID id) {
         this.id = id;
-        this.entityComponents = new HashSet<>();
+        this.entityComponents = new HashMap<>();
         this.world = world;
 
         world.getWorldEntities().add(this);
     }
 
-    public <T extends Component> void add(final Supplier<T> component) {
-        if (component.get() == null) return;
-        final T cmp = component.get();
+    public <T extends Component> void add(final Class<T> componentClass, final T component) {
+        if (component == null) return;
 
         if (!world.getWorldEntities().contains(this)) try {
             throw new Exception("Entity doesn't exist in the world.");
@@ -36,29 +39,31 @@ public class Entity {
             throw new RuntimeException(e);
         }
 
-        if (entityComponents.contains(cmp)) try {
+        if (entityComponents.containsKey(component.getString())) try {
             throw new Exception("Component already added!");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
-        if (!world.isRegisteredComponent(component.get().getClass())) try {
+        if (!world.isRegisteredComponent(component.getClass())) try {
             throw new Exception("Component not registered!");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
-        entityComponents.add(cmp);
+        entityComponents.put(component.getString(), component);
     }
 
-    public <T extends PacketEvent<?>> EntityEvent<T> mapEvent(Class<T> packetEvent, Consumer<T> packetConsumer) {
+    public <T extends PacketEvent<?>> EntityEvent<T> mapEvent(final Class<T> packetEvent, final Consumer<T> packetConsumer) {
         return new EntityEvent<>(packetConsumer);
     }
 
-    public <T extends Component> void remove(final Supplier<T> component) {
-        if (component.get() == null) return;
+    public EntityCreator create() {
+        return new EntityCreator(this);
+    }
 
-        final T cmp = component.get();
+    public <T extends Component> void remove(final Class<T> componentClass, final T component) {
+        if (component == null) return;
 
         if (!world.getWorldEntities().contains(this)) try {
             throw new Exception("Entity doesn't exist in the world.");
@@ -66,19 +71,27 @@ public class Entity {
             throw new RuntimeException(e);
         }
 
-        if (!entityComponents.contains(cmp)) try {
+        if (!entityComponents.containsKey(component.getString())) try {
             throw new Exception("Component not added to entity!");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
-        if (!world.isRegisteredComponent(component.get().getClass())) try {
+        if (!world.isRegisteredComponent(component.getClass())) try {
             throw new Exception("Component not registered!");
         } catch (Exception e) {
             throw new RuntimeException(e);
         }
 
-        entityComponents.remove(cmp);
+        entityComponents.remove(component.getString());
+    }
+
+    @SuppressWarnings("unchecked")
+    public <T extends Component> T getComponent(final Class<T> entityComponentClass, final ComponentType componentType) {
+        if (entityComponents.containsKey(componentType.getComponentName())) {
+            return (T) entityComponents.get(componentType.getComponentName());
+        }
+        return null;
     }
 
     public void destroy() {
@@ -95,8 +108,8 @@ public class Entity {
         });
     }
 
-    public <T extends Component> boolean hasComponent(final Component component) {
+    public boolean hasComponent(final ComponentType component) {
         if (entityComponents.isEmpty()) return false;
-        return entityComponents.contains(component);
+        return entityComponents.containsKey(component.getComponentName());
     }
 }

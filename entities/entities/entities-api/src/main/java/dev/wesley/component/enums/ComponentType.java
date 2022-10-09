@@ -2,24 +2,21 @@ package dev.wesley.component.enums;
 
 import dev.wesley.component.Component;
 import dev.wesley.component.Testing;
+import dev.wesley.component.types.PerPlayerComponent;
 
 import java.util.function.Supplier;
 
 public enum ComponentType {
-    TESTING(Testing::new),
-    TESTING2(Testing::new);
 
-    private final Supplier<Component> componentSupplier;
+    PER_PLAYER_COMPONENT("PerPlayerComponent");
 
-    ComponentType(Supplier<Component> componentSupplier) {
-        this.componentSupplier = componentSupplier;
+    private final String componentName;
+
+    ComponentType(String componentName) {
+        this.componentName = componentName;
     }
 
-    public Supplier<Component> getComponentSupplier() {
-        return componentSupplier;
-    }
-
-    public Component getComponent() {
-        return componentSupplier.get();
+    public String getComponentName() {
+        return componentName;
     }
 }
